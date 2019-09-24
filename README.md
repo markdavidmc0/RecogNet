@@ -1,5 +1,6 @@
 # RecogNet
-Facial recognition from free-world overhead cameras
+Facial recognition from free-world overhead cameras - for improved security
+in South Africa.
 
 The first implementation is a Django API that can receive an image and
 a data dictionary and return a data dictionary about the recognised 

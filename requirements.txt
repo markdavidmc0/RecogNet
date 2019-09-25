@@ -1,5 +1,9 @@
-tensorflow==1.14.0
+django==2.2.5
+djangorestframework==3.10.3
 keras==2.2.5
-opencv-python==4.1.1.26
 matplotlib==3.1.1
+opencv-python==4.1.1.26
 python-resize-image==1.1.19
+tensorflow==1.14.0
+
+

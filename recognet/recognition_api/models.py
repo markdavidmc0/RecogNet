@@ -8,11 +8,20 @@ class Person(models.Model):
     last_name = models.CharField(max_length=30)
     age = models.IntegerField
     gender = models.CharField(max_length=30, choices=[('male', 'female')])
-    unprocessed_video_url = models.URLField()
-    processed_video_url = models.URLField()
-    unprocessed_image_url = models.URLField()
-    processed_image_url = models.URLField()
-    modified = models.DateTimeField()
+    unprocessed_video_url = models.URLField(default='https://console.cloud.google.com/'
+                                                    'storage/browser/'
+                                                    'recognet-unprocessed-videos/')
+    processed_video_url = models.URLField(default='https://console.cloud.google.com/'
+                                                  'storage/browser/'
+                                                  'recognet-processed-videos/')
+    unprocessed_image_url = models.URLField(default='https://console.cloud.google.com/'
+                                                    'storage/browser/'
+                                                    'recognet-unprocessed-images/')
+    processed_image_url = models.URLField(default='https://console.cloud.google.com/'
+                                                  'storage/browser/'
+                                                  'recognet-processed-images/')
+    image = models.FileField(upload_to='')
+    modified = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(editable=False)
 
     def save(self, *args, **kwargs):

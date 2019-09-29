@@ -1,0 +1,1 @@
+default_app_config = 'recognition_api.apps.RecognitionApiConfig'

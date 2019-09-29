@@ -6,7 +6,7 @@ class Person(models.Model):
     """Image Recognition person security profile."""
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    age = models.IntegerField
+    age = models.IntegerField(default=0)
     gender = models.CharField(max_length=30, choices=[('male', 'female')])
     unprocessed_video_url = models.URLField(default='https://console.cloud.google.com/'
                                                     'storage/browser/'
@@ -20,7 +20,7 @@ class Person(models.Model):
     processed_image_url = models.URLField(default='https://console.cloud.google.com/'
                                                   'storage/browser/'
                                                   'recognet-processed-images/')
-    image = models.FileField(upload_to='')
+    image = models.ImageField(upload_to='')
     modified = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(editable=False)
 

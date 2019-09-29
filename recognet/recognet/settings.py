@@ -122,5 +122,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Storage
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'recognet-processed-images'
+# https://docs.djangoproject.com/en/2.2/ref/settings/
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20971520

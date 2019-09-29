@@ -1,4 +1,3 @@
-import os
 from environs import Env
 from google.cloud import storage
 from resizeimage import resizeimage
@@ -12,18 +11,19 @@ from rest_framework.response import Response
 env = Env()
 env.read_env()  # read .env file, if it exists
 
-BUCKET_NAME_UNPROCESSED = env('BUCKET_NAME_UNPROCESSED')
-BUCKET_NAME_PROCESSED = env('BUCKET_NAME_PROCESSED')
+BUCKET_NAME_UNPROCESSED = Person.unprocessed_image_url
+BUCKET_NAME_PROCESSED = Person.processed_image_url
 SERVICE_ACCOUNT = env('SERVICE_ACCOUNT')
 
 
-class PersonViewSet(viewsets.ModelViewSet):
+class PredictionViewSet(viewsets.GenericViewSet):
     """Person endpoint to interact with Person object."""
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
 
     def predict(self, request):
         """Predict whether image received matches person in DB or not."""
+        data = request.data
         # store incoming image
         unprocessed_name = self.store(request, BUCKET_NAME_UNPROCESSED)
         # process image

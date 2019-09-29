@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models.functions import Concat
 from django.utils import timezone
 
 
@@ -21,15 +20,6 @@ class Person(models.Model):
     location = models.CharField(max_length=30, default='unknown')
     gender = models.CharField(max_length=30, choices=[('male', 'female')],
                               default='unknown')
-    person_unprocessed_video_url = Concat(unprocessed_video_url_env, first_name, '_',
-                                          last_name, '_', year_of_birth, '_', location)
-    person_processed_video_url = Concat(processed_video_url_env, first_name, '_',
-                                        last_name, '_', year_of_birth, '_', location)
-    person_unprocessed_image_url = Concat(unprocessed_image_url_env, first_name, '_',
-                                          last_name, '_', year_of_birth, '_', location)
-    person_processed_image_url = Concat(processed_video_url_env, first_name, '_',
-                                        last_name, '_', year_of_birth, '_', location)
-
     unprocessed_video_url = models.URLField(default=unprocessed_video_url_env)
     processed_video_url = models.URLField(default=processed_video_url_env)
     unprocessed_image_url = models.URLField(default=unprocessed_image_url_env)
@@ -38,8 +28,47 @@ class Person(models.Model):
     created = models.DateTimeField(editable=False)
 
     def save(self, *args, **kwargs):
-        """Update timestamps on save."""
+        """Updates on save."""
+        # timestamps
         if not self.id:
             self.created = timezone.now()
         self.modified = timezone.now()
+
+        # urls
+        self.unprocessed_video_url = '_'.join(
+            [
+                self.unprocessed_video_url,
+                self.first_name,
+                self.last_name,
+                str(self.year_of_birth),
+                self.location
+            ]
+        )
+        self.processed_video_url = '_'.join(
+            [
+                self.processed_video_url,
+                self.first_name,
+                self.last_name,
+                str(self.year_of_birth),
+                self.location
+            ]
+        )
+        self.unprocessed_image_url = '_'.join(
+            [
+                self.unprocessed_image_url,
+                self.first_name,
+                self.last_name,
+                str(self.year_of_birth),
+                self.location
+            ]
+        )
+        self.processed_image_url = '_'.join(
+            [
+                self.processed_image_url,
+                self.first_name,
+                self.last_name,
+                str(self.year_of_birth),
+                self.location
+            ]
+        )
         return super(Person, self).save(*args, **kwargs)

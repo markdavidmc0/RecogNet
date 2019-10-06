@@ -32,6 +32,7 @@ class PersonViewSet(viewsets.GenericViewSet,
     serializer_class = PersonSerializer
     queryset = Person.objects.all()
     file_name = ''
+    public_url = []
 
     @action(detail=False, methods=['post'])
     def predict(self, request) -> Response:
@@ -44,10 +45,11 @@ class PersonViewSet(viewsets.GenericViewSet,
         # store processed image
         self.store(request, BUCKET_NAME_PROCESSED)
 
-        return Response(f'unprocessed image successfully uploaded to:'
-                        f' {BUCKET_NAME_UNPROCESSED + self.file_name} | '
-                        f'processed image successfully uploaded to'
-                        f' {BUCKET_NAME_PROCESSED + self.file_name}.')
+        return Response(
+            {
+                'unprocessed_image': self.public_url[0],
+                'processed_image': self.public_url[1]
+            })
 
     def store(self, request, bucket_name) -> None:
         """Uploads a file to a bucket.
@@ -62,7 +64,8 @@ class PersonViewSet(viewsets.GenericViewSet,
 
             # file upload via GCS API
             blob = self.upload_to_gcs(file, bucket_name, destination_blob_name)
-            print(f'File {destination_blob_name} uploaded to {blob}.')
+            self.public_url.append(blob)
+            print(f'File {destination_blob_name} uploaded to {blob}')
         else:
             raise MethodNotAllowed(request.method,
                                    detail="file upload won't occur unless POST")
@@ -78,7 +81,7 @@ class PersonViewSet(viewsets.GenericViewSet,
         blob = bucket.blob(destination_blob_name)
         blob.upload_from_file(file)
 
-        return blob
+        return blob.public_url
 
     @staticmethod
     def preprocess_image(request) -> None:

@@ -24,51 +24,53 @@ class Person(models.Model):
     processed_video_url = models.URLField(default=processed_video_url_env)
     unprocessed_image_url = models.URLField(default=unprocessed_image_url_env)
     processed_image_url = models.URLField(default=processed_image_url_env)
+    image = models.ImageField(upload_to='')
     modified = models.DateTimeField(default=timezone.now)
-    created = models.DateTimeField(editable=False)
+    created = models.DateTimeField(default=timezone.now, editable=False)
 
-    def save(self, *args, **kwargs):
-        """Updates on save."""
-        # timestamps
-        if not self.id:
-            self.created = timezone.now()
+    def __str__(self) -> str:
+        """Set string of model object to unique person identifier."""
+        return '_'.join(
+            [
+                self.first_name,
+                self.last_name,
+                str(self.year_of_birth),
+                self.location
+            ]
+        )
+
+    def save(self, *args, **kwargs) -> None:
+        """Modify save to allow collection of multiple photos per unique person."""
+        # .lower for Char fields
+        self.first_name = self.first_name.lower()
+        self.last_name = self.last_name.lower()
+        self.location = self.location.lower()
+
+        # update timestamps
         self.modified = timezone.now()
 
-        # urls
-        self.unprocessed_video_url = '_'.join(
+        # if model exists in DB, update date modified else don't save model
+        model = Person.objects.filter(
+            first_name=self.first_name,
+            last_name=self.last_name,
+            year_of_birth=self.year_of_birth,
+            location=self.location
+        )
+        if not model:
+            self.init_urls()
+            return super(Person, self).save(*args, **kwargs)
+
+    def init_urls(self) -> None:
+        """Initialise urls when creating unique person media storage location."""
+        unique_id = '_'.join(
             [
-                self.unprocessed_video_url,
                 self.first_name,
                 self.last_name,
                 str(self.year_of_birth),
                 self.location
             ]
         )
-        self.processed_video_url = '_'.join(
-            [
-                self.processed_video_url,
-                self.first_name,
-                self.last_name,
-                str(self.year_of_birth),
-                self.location
-            ]
-        )
-        self.unprocessed_image_url = '_'.join(
-            [
-                self.unprocessed_image_url,
-                self.first_name,
-                self.last_name,
-                str(self.year_of_birth),
-                self.location
-            ]
-        )
-        self.processed_image_url = '_'.join(
-            [
-                self.processed_image_url,
-                self.first_name,
-                self.last_name,
-                str(self.year_of_birth),
-                self.location
-            ]
-        )
-        return super(Person, self).save(*args, **kwargs)
+        self.unprocessed_video_url = self.unprocessed_video_url + unique_id
+        self.processed_video_url = self.processed_video_url + unique_id
+        self.unprocessed_image_url = self.unprocessed_image_url + unique_id
+        self.processed_image_url = self.processed_image_url + unique_id

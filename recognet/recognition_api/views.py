@@ -1,3 +1,5 @@
+"""Viewsets for prediction API."""
+
 from environs import Env
 from google.cloud import storage
 from io import BytesIO
@@ -60,7 +62,11 @@ class PersonViewSet(viewsets.GenericViewSet,
             file.seek(0)
             if not self.file_name:
                 self.file_name = str(uuid4())
-            destination_blob_name = self.file_name
+            # get Person image folder - defaults to match Model fields
+            person = self.get_person(request)
+
+            # determine blob name based on person image is associated with
+            destination_blob_name = person + '/' + self.file_name
 
             # file upload via GCS API
             blob = self.upload_to_gcs(file, bucket_name, destination_blob_name)
@@ -69,6 +75,21 @@ class PersonViewSet(viewsets.GenericViewSet,
         else:
             raise MethodNotAllowed(request.method,
                                    detail="file upload won't occur unless POST")
+
+    def get_person(self, request) -> str:
+        """Get unique identifier for person from Model.
+        :param request: DRF HttpRequest
+        """
+        if self.get_queryset():
+            person = str(self.get_queryset().filter(
+                first_name=request.data.get('first_name', 'unknown'),
+                last_name=request.data.get('last_name', 'unknown'),
+                year_of_birth=request.data.get('year_of_birth', 0),
+                location=request.data.get('location', 'unknown')))
+        else:
+            person = 'unknown_unknown_0_unknown'
+
+        return person
 
     @staticmethod
     def upload_to_gcs(file, bucket_name, destination_blob_name):

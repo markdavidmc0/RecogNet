@@ -21,7 +21,6 @@ env.read_env()  # read .env file, if it exists
 
 BUCKET_NAME_UNPROCESSED = env('BUCKET_NAME_UNPROCESSED')
 BUCKET_NAME_PROCESSED = env('BUCKET_NAME_PROCESSED')
-SERVICE_ACCOUNT = env('SERVICE_ACCOUNT')
 WIDTH = int(env('WIDTH'))
 HEIGHT = int(env('HEIGHT'))
 
@@ -97,7 +96,7 @@ class PersonViewSet(viewsets.GenericViewSet,
         :param file: file handle (bytes) or BytesIO
         :param bucket_name: str
         :param destination_blob_name: str"""
-        storage_client = storage.Client.from_service_account_json(SERVICE_ACCOUNT)
+        storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)
         blob.upload_from_file(file)

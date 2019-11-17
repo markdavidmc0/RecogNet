@@ -10,10 +10,32 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 from environs import Env
+import json
 import os
+
+from google.cloud import storage
+
 
 env = Env()
 env.read_env()  # read .env file, if it exists
+
+
+if not env('ENV') == 'local':
+    # Read secrets from Cloud Storage
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(env('SECRETS_BUCKET_NAME'))
+    blob = bucket.blob(env('SECRETS_BLOB_NAME'))
+    secret_byte = blob.download_as_string()
+    secret_json = json.loads(secret_byte)
+
+    SECRET_KEY = secret_json.get('DJANGO_SECRET_KEY')
+    DB_PASSWORD = secret_json.get('DB_PASSWORD')
+else:
+    SECRET_KEY = env('DJANGO_SECRET_KEY')
+    DB_PASSWORD = env('DB_PASSWORD')
+
+    # Set application credentials for unit tests
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = env('GOOGLE_APPLICATION_CREDENTIALS')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,8 +44,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -83,12 +103,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
+        'PASSWORD': DB_PASSWORD,
+        'HOST': env('DB_HOST_LOCAL'),
         'PORT': env('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
